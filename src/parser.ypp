@@ -1,0 +1,34 @@
+%{
+#include <iostream>
+
+#define YYDEBUG 1
+
+void yyerror(std::string message) {
+    std::cerr << message << std::endl;
+    exit(EXIT_FAILURE);
+}
+
+extern int yylex();
+
+%}
+
+%%
+
+Program: Program '\n' Statement {
+
+} | Statement {
+
+}
+;
+
+Statement: 
+;
+
+%%
+
+int main()
+{
+    yyparse();
+
+    return 0;
+}
