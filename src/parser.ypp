@@ -9,19 +9,88 @@ void yyerror(std::string message) {
 }
 
 extern int yylex();
-
+extern bool code;
 %}
+
+%token begin_token end_token true_token false_token comment_token
+%token <str_type> id_token string_token
+%token <num_type> num_token
+
+%union {
+    std::string* str_type;
+    float num_type;
+}
 
 %%
 
-Program: Program '\n' Statement {
-
-} | Statement {
+Program: Block '\n' {
 
 }
 ;
 
-Statement: 
+Block: begin_token '\n' StatementArray end_token {
+
+}
+;
+
+StatementArray: StatementArray Statement '\n'{
+
+}
+| Statement '\n' {
+    
+}
+;
+
+Statement: id_token '=' E {
+
+}
+| comment_token {
+    
+}
+;
+
+E: string_token {
+
+}
+| num_token {
+
+}
+| true_token {
+
+}
+| false_token {
+
+}
+| '{' '\n' ObjectArray '\n' '}' {
+
+}
+| '[' Array ']' {
+
+}
+;
+
+Array: Array ',' E {
+
+}
+| E {
+
+}
+;
+
+ObjectArray: ObjectArray ',' '\n' ObjectStatement {
+
+}
+| ObjectStatement {
+
+}
+;
+
+ObjectStatement: id_token ':' E {
+
+}
+| comment_token {
+
+}
 ;
 
 %%
