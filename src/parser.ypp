@@ -9,7 +9,7 @@ void yyerror(std::string message) {
 }
 
 extern int yylex();
-extern bool code;
+extern int line_counter;
 %}
 
 %token begin_token end_token true_token false_token comment_token
@@ -23,29 +23,32 @@ extern bool code;
 
 %%
 
-Program: Block '\n' {
+Program: Block {
 
 }
 ;
 
-Block: begin_token '\n' StatementArray end_token {
+Block: begin_token StatementArray end_token {
 
 }
 ;
 
-StatementArray: StatementArray Statement '\n'{
+StatementArray: StatementArray Statement ';'{
 
 }
-| Statement '\n' {
+| StatementArray comment_token {
+
+}
+| Statement ';' {
     
 }
+| comment_token {
+
+} 
 ;
 
 Statement: id_token '=' E {
 
-}
-| comment_token {
-    
 }
 ;
 
@@ -61,7 +64,7 @@ E: string_token {
 | false_token {
 
 }
-| '{' '\n' ObjectArray '\n' '}' {
+| '{' ObjectArray '}' {
 
 }
 | '[' Array ']' {
@@ -77,26 +80,47 @@ Array: Array ',' E {
 }
 ;
 
-ObjectArray: ObjectArray ',' '\n' ObjectStatement {
+ObjectArray: ObjectStatement ',' ObjectArray {
+
+}
+| ObjectStatement comment_token {
+
+}
+| comment_token ObjectArray {
 
 }
 | ObjectStatement {
 
+}
+| comment_token {
+    
 }
 ;
 
 ObjectStatement: id_token ':' E {
 
 }
-| comment_token {
-
-}
 ;
 
 %%
 
-int main()
+extern FILE* yyout;
+extern FILE* yyin;
+
+/* Program must be called with input and output filenames. */
+int main(int argc, char** argv)
 {
+    // yydebug = 1;
+
+    if(argc < 3)
+        yyerror("Input or output filename missing.");
+
+    if((yyin = fopen(argv[1], "r")) == NULL)
+        yyerror("Opening input file failed.");
+
+    if((yyout = fopen(argv[2], "w")) == NULL)
+        yyerror("Opening output file failed.");
+    
     yyparse();
 
     return 0;

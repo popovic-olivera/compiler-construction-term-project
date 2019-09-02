@@ -2,56 +2,70 @@
 %option noinput
 %option noyywrap
 
+%x code
+
 %{
 #include <iostream>
 
 #include "parser.tab.hpp"
 
-bool code = false;
+int line_counter = 0;
 %}
 
 NUM [0-9]
 %%
 
 "{%" {
-    code = true;
+    BEGIN(code);
     return begin_token;
 }
 
-"%}" {
-    code = false;
+<code>"%}" {
+    BEGIN(INITIAL);
     return end_token;
 }
 
-"true"|"True" return true_token;
-"false"|"False" return false_token;
+<code>"true"|"True" return true_token;
+<code>"false"|"False" return false_token;
+<code>#[^\n]* return comment_token;
 
-#[^\n]* return comment_token;
-
-[1-9]{NUM}*|{NUM}+(\.{NUM}+)? {
+<code>[1-9]{NUM}*|{NUM}+(\.{NUM}+)? {
     yylval.num_type = atof(yytext);
     return num_token;
 }
 
-[a-zA-Z_][a-zA-Z0-9_]* {
+<code>[a-zA-Z_][a-zA-Z0-9_]* {
     yylval.str_type = new std::string(yytext);
     return id_token;
 }
 
-\"[^\"]*\" {
+<code>\"[^\"]*\" {
     std::string s = std::string(yytext + 1);
     s = s.substr(0, s.size() - 1);
     yylval.str_type = new std::string(s);
     return string_token;
 }
 
-[\n\[\]=:{},#] return yytext[0];
+<code>[;\[\]=:{},#] return yytext[0];
 
-[\t ] { }
+<code>\n {
+    line_counter++;
+}
 
-. {
+<code>[\t ] { }
+
+<code>. {
     std::cout << "Error - Unknown character: " << *yytext << std::endl;
     exit(EXIT_FAILURE);
+}
+
+\n {
+    line_counter++;
+    ECHO;
+}
+
+. {
+    ECHO;
 }
 
 %%
