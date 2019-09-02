@@ -1,5 +1,8 @@
 %{
 #include <iostream>
+#include <string>
+#include <map>
+#include "src/variables.hpp"
 
 #define YYDEBUG 1
 
@@ -10,6 +13,9 @@ void yyerror(std::string message) {
 
 extern int yylex();
 extern int line_counter;
+
+std::map<std::string, Variable*> variables_table;
+std::map<std::string, Object*> objects_table;
 %}
 
 %token begin_token end_token true_token false_token comment_token
