@@ -26,6 +26,12 @@ void Array::print() const
     }
 }
 
+Array::~Array()
+{
+    for(unsigned i = 0; i < _value.size(); i++)
+        delete _value[i];
+}
+
 void Object::print() const
 {
     auto it = _atributes.begin();
@@ -36,4 +42,17 @@ void Object::print() const
 
         it++;
     }
+}
+
+Object::~Object()
+{
+    auto it = _atributes.begin();
+    while(it != _atributes.end())
+    {
+        delete it->second;
+
+        it++;
+    }
+
+    _atributes.clear();
 }

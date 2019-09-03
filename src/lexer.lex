@@ -7,6 +7,7 @@
 %{
 #include <iostream>
 #include "src/variables.hpp"
+#include "src/statement.hpp"
 
 #include "parser.tab.hpp"
 

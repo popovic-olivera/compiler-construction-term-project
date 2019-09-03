@@ -10,7 +10,7 @@ class Variable {
 public:
     Variable() = default;
 
-    ~Variable() = default;
+    virtual ~Variable() = default;
     virtual void print() const = 0;
 };
 
@@ -53,9 +53,12 @@ public:
     : _value(value)
     {}
 
+    ~Array();
     void print() const override;
 private:
     std::vector<Variable*> _value;
+    Array(const Array& a);
+    Array& operator=(const Array& a);
 };
 
 class Object : public Variable {
@@ -64,9 +67,12 @@ public:
     : _atributes(atributes)
     {}
 
+    ~Object();
     void print() const override;
 private:
     std::map<std::string, Variable*> _atributes;
+    Object(const Object& o);
+    Object& operator=(const Object& o);
 };
 
 #endif

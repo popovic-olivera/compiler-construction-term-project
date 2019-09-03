@@ -8,7 +8,7 @@ VAR = src/variables.cpp
 STATH = src/statement.hpp
 STAT = src/statement.cpp
 
-$(PROGRAM): lex.yy.o parser.o variables.o
+$(PROGRAM): lex.yy.o parser.o variables.o statement.o
 	$(CXX) $(CFLAGS) -o $@ $^
 
 variables.o: $(VAR) $(VARH)
