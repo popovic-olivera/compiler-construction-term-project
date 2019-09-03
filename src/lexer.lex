@@ -6,6 +6,7 @@
 
 %{
 #include <iostream>
+#include "src/variables.hpp"
 
 #include "parser.tab.hpp"
 
@@ -27,7 +28,7 @@ NUM [0-9]
 
 <code>"true"|"True" return true_token;
 <code>"false"|"False" return false_token;
-<code>#[^\n]* return comment_token;
+<code>#[^\n]* {}
 
 <code>[1-9]{NUM}*|{NUM}+(\.{NUM}+)? {
     yylval.num_type = atof(yytext);

@@ -3,12 +3,15 @@
 
 #include <string>
 #include <vector>
+#include <map>
+#include <iostream>
 
 class Variable {
 public:
     Variable() = default;
 
     ~Variable() = default;
+    virtual void print() const = 0;
 };
 
 class String : public Variable {
@@ -17,6 +20,7 @@ public:
     : _value(value)
     {}
 
+    void print() const override;
 private:
     std::string _value;
 };
@@ -27,6 +31,7 @@ public:
     : _value(value)
     {}
 
+    void print() const override;
 private:
     float _value;
 };
@@ -37,18 +42,31 @@ public:
     : _value(value)
     {}
 
+    void print() const override;
 private:
     bool _value;
 };
 
-class Object {
+class Array : public Variable {
 public:
-    Object(std::vector<Variable> fields)
-    : _fields(fields)
+    Array(std::vector<Variable*> value)
+    : _value(value)
     {}
 
+    void print() const override;
 private:
-    std::vector<Variable> _fields;
+    std::vector<Variable*> _value;
+};
+
+class Object : public Variable {
+public:
+    Object(std::map<std::string, Variable*> atributes)
+    : _atributes(atributes)
+    {}
+
+    void print() const override;
+private:
+    std::map<std::string, Variable*> _atributes;
 };
 
 #endif

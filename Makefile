@@ -5,11 +5,16 @@ PARSER = src/parser.ypp
 LEXER = src/lexer.lex
 VARH = src/variables.hpp
 VAR = src/variables.cpp
+STATH = src/statement.hpp
+STAT = src/statement.cpp
 
 $(PROGRAM): lex.yy.o parser.o variables.o
 	$(CXX) $(CFLAGS) -o $@ $^
 
 variables.o: $(VAR) $(VARH)
+	$(CXX) $(CFLAGS) -c -o $@ $<
+
+statement.o: $(STAT) $(STATH)
 	$(CXX) $(CFLAGS) -c -o $@ $<
 
 lex.yy.o: lex.yy.c parser.tab.hpp
