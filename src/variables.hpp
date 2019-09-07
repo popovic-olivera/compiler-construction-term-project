@@ -11,7 +11,7 @@ public:
     Variable() = default;
 
     virtual ~Variable() = default;
-    virtual void print() const = 0;
+    virtual std::string print() const = 0;
 };
 
 class String : public Variable {
@@ -20,7 +20,7 @@ public:
     : _value(value)
     {}
 
-    void print() const override;
+    std::string print() const override;
 private:
     std::string _value;
 };
@@ -31,7 +31,7 @@ public:
     : _value(value)
     {}
 
-    void print() const override;
+    std::string print() const override;
 private:
     float _value;
 };
@@ -42,7 +42,7 @@ public:
     : _value(value)
     {}
 
-    void print() const override;
+    std::string print() const override;
 private:
     bool _value;
 };
@@ -54,7 +54,8 @@ public:
     {}
 
     ~Array();
-    void print() const override;
+    std::string print() const override;
+    std::vector<Variable*> get_value() const;
 private:
     std::vector<Variable*> _value;
     Array(const Array& a);
@@ -68,7 +69,8 @@ public:
     {}
 
     ~Object();
-    void print() const override;
+    std::string print() const override;
+    std::map<std::string, Variable*> get_atributes() const;
 private:
     std::map<std::string, Variable*> _atributes;
     Object(const Object& o);

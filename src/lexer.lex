@@ -3,15 +3,22 @@
 %option noyywrap
 
 %x code
+%x code_text
 
 %{
 #include <iostream>
+#include <map>
+#include <vector>
 #include "src/variables.hpp"
 #include "src/statement.hpp"
 
 #include "parser.tab.hpp"
 
-int line_counter = 0;
+int line_counter = 1; 
+int text_counter = 0;
+int line_characters_counter = 0;
+std::vector<std::string> file_text{""};
+std::map<int, int> added;
 %}
 
 NUM [0-9]
@@ -57,17 +64,57 @@ NUM [0-9]
 <code>[\t ] { }
 
 <code>. {
-    std::cout << "Error - Unknown character: " << *yytext << std::endl;
+    std::cout << "Line " << line_counter << ":Error - Unknown character: " << *yytext << std::endl;
     exit(EXIT_FAILURE);
+}
+
+"{{" {
+    BEGIN(code_text);
+    return begin_text_token;
+}
+
+<code_text>"}}" {
+    BEGIN(INITIAL);
+    return end_text_token;
+}
+
+<code_text>"for" return for_token;
+<code_text>"in" return in_token;
+<code_text>"if" return if_token;
+
+<code_text>[0-9]+ {
+    yylval.int_type = atoi(yytext);
+    return int_num_token;
+}
+
+<code_text>[a-zA-Z_][a-zA-Z0-9_]* {
+    yylval.str_type = new std::string(yytext);
+    return id_token;
+}
+
+<code_text>[\[\].] return yytext[0];
+
+<code_text>\n {
+    line_counter++;
 }
 
 \n {
     line_counter++;
-    ECHO;
+    
+    if(text_counter == 0)
+        added[0] = 0;
+    
+    file_text[text_counter].append(yytext);
+    text_counter++;
+    line_characters_counter = 0;
+    
+    file_text.push_back("");
+    added[text_counter] = 0;
 }
 
 . {
-    ECHO;
+    file_text[text_counter].append(yytext);
+    line_characters_counter++;
 }
 
 %%

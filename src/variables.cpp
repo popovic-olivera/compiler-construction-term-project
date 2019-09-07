@@ -1,29 +1,31 @@
 #include "variables.hpp"
 
-void String::print() const
+std::string String::print() const
 {
-    std::cout << _value << std::endl;
+    return _value;
 }
 
-void Number::print() const 
+std::string Number::print() const 
 {
-    std::cout << _value << std::endl;
+    return std::to_string(_value);
 }
 
-void Boolean::print() const
+std::string Boolean::print() const
 {
-    std::cout << _value << std::endl;
+    if(_value)
+        return "true";
+    else
+        return "false";
 }
 
-void Array::print() const
+std::string Array::print() const
 {
-    auto it = _value.begin();
-    while(it != _value.end())
-    {
-        (*it)->print(); 
+    return "";
+}
 
-        it++;
-    }
+std::vector<Variable*> Array::get_value() const
+{
+    return _value;
 }
 
 Array::~Array()
@@ -32,16 +34,14 @@ Array::~Array()
         delete _value[i];
 }
 
-void Object::print() const
+std::string Object::print() const
 {
-    auto it = _atributes.begin();
-    while(it != _atributes.end())
-    {
-        std::cout << it->first << " = ";
-        it->second->print();
+    return "";
+}
 
-        it++;
-    }
+std::map<std::string, Variable*> Object::get_atributes() const
+{
+    return _atributes;
 }
 
 Object::~Object()

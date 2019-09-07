@@ -44,4 +44,51 @@ private:
     Assignment& operator=(const Assignment& a);
 };
 
+class ObjectTextStatement : public Statement {
+public:
+    ObjectTextStatement(std::string object, std::string atribute, int line_number = 0, int character_place = 0)
+    : _object(object), _atribute(atribute), _line_number(line_number), _character_place(character_place)
+    {}
+    
+    void run() const override;
+    void set_line_number(int value);
+    void set_character_place(int value);
+private:
+    std::string _object;
+    std::string _atribute;
+    int _line_number;
+    int _character_place;
+};
+
+class ArrayTextStatement : public Statement {
+public: 
+    ArrayTextStatement(std::string name, int index, int line_number = 0, int character_place = 0)
+    : _name(name), _index(index), _line_number(line_number), _character_place(character_place)
+    {}
+    
+    void run() const override;
+    void set_line_number(int value);
+    void set_character_place(int value);
+private:
+    std::string _name;
+    int _index;
+    int _line_number;
+    int _character_place;
+};
+
+class VarTextStatement : public Statement {
+public: 
+    VarTextStatement(std::string name, int line_number = 0, int character_place = 0)
+    : _name(name), _line_number(line_number), _character_place(character_place)
+    {}
+    
+    void run() const override;
+    void set_line_number(int value);
+    void set_character_place(int value);
+private:
+    std::string _name;
+    int _line_number;
+    int _character_place;
+};
+
 #endif
