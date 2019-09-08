@@ -92,4 +92,16 @@ private:
     int _character_place;
 };
 
+class IfStatement : public Statement {
+public:
+    IfStatement(std::string id, std::vector<Statement*> statements)
+    : _id(id), _statements(statements)
+    {}
+    
+    void run() const override;
+private:
+    std::string _id;
+    std::vector<Statement*> _statements;
+};
+
 #endif

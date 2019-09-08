@@ -7,12 +7,21 @@
 #include <iostream>
 #include "colors.hpp"
 
+enum Type {
+    STR,
+    NUM,
+    BOOL,
+    ARR,
+    OBJ
+};
+
 class Variable {
 public:
     Variable() = default;
 
     virtual ~Variable() = default;
     virtual std::string print() const = 0;
+    virtual Type get_type() const = 0;
 };
 
 class String : public Variable {
@@ -22,6 +31,7 @@ public:
     {}
 
     std::string print() const override;
+    Type get_type() const override;
 private:
     std::string _value;
 };
@@ -33,6 +43,7 @@ public:
     {}
 
     std::string print() const override;
+    Type get_type() const override;
 private:
     float _value;
 };
@@ -44,6 +55,7 @@ public:
     {}
 
     std::string print() const override;
+    Type get_type() const override;
 private:
     bool _value;
 };
@@ -57,6 +69,7 @@ public:
     ~Array();
     std::string print() const override;
     std::vector<Variable*> get_value() const;
+    Type get_type() const override;
 private:
     std::vector<Variable*> _value;
     Array(const Array& a);
@@ -72,6 +85,7 @@ public:
     ~Object();
     std::string print() const override;
     std::map<std::string, Variable*> get_atributes() const;
+    Type get_type() const override;
 private:
     std::map<std::string, Variable*> _atributes;
     Object(const Object& o);

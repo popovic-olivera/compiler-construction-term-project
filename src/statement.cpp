@@ -34,7 +34,11 @@ void ObjectTextStatement::run() const
     
     if(finder != variables_table.end())
     {
-        Variable* o = finder->second; // TODO ovde moze da pukne ako nije objekat. Mozda dodati neku listu objekata ili posebne mape
+        Variable* o = finder->second;
+        
+        if(o->get_type() != OBJ)
+            yyerror(Color::set_blue("Line " + std::to_string(line_counter) + ":Error - '" + _object + "' is not an object."));
+        
         Object* obj = (Object*)o;
         
         auto map = obj->get_atributes();
@@ -49,14 +53,12 @@ void ObjectTextStatement::run() const
         }
         else
         {
-            std::string s = "Line " + std::to_string(line_counter) + ":Error - Not found. Atribute: " + _atribute + " of object: " + _object + " does not exist.";
-            yyerror(Color::set_blue(s));
+            yyerror(Color::set_blue("Line " + std::to_string(line_counter) + ":Error - Not found. Atribute: '" + _atribute + "' of object: '" + _object + "' does not exist."));
         }
     }
     else 
     {
-        std::string s = "Line " + std::to_string(line_counter) + ":Error - Not found. Object: " + _object + " does not exist.";
-        yyerror(Color::set_blue(s));
+        yyerror(Color::set_blue("Line " + std::to_string(line_counter) + ":Error - Not found. Object: '" + _object + "' does not exist."));
     }
 }
 
@@ -76,7 +78,11 @@ void ArrayTextStatement::run() const
     
     if(finder != variables_table.end())
     {
-        Variable* a = finder->second; // TODO ovde moze da pukne ako nije niz. Mozda dodati neku listu nizova ili posebne mape
+        Variable* a = finder->second;
+        
+        if(a->get_type() != ARR)
+            yyerror(Color::set_magenta("Line " + std::to_string(line_counter) + ":Error - '" + _name + "' is not an array."));
+        
         Array* arr = (Array*)a;
         
         auto array = arr->get_value();
@@ -87,8 +93,7 @@ void ArrayTextStatement::run() const
     }
     else 
     {
-        std::string s = "Line " + std::to_string(line_counter) + ":Error - Not found. Array: " + _name + " does not exist.";
-        yyerror(Color::set_magenta(s));
+        yyerror(Color::set_magenta("Line " + std::to_string(line_counter) + ":Error - Not found. Array: '" + _name + "' does not exist."));
     }
 }
 
@@ -108,7 +113,10 @@ void VarTextStatement::run() const
     
     if(finder != variables_table.end())
     {
-        Variable* v = finder->second; // TODO ovde moze da pukne ako nije promenljiva. Mozda dodati neku listu promenljivih ili posebne mape
+        Variable* v = finder->second; 
+        
+        if(v->get_type() == ARR || v->get_type() == OBJ)
+            yyerror(Color::set_cyan("Line " + std::to_string(line_counter) + ":Error - '" + _name + "' is not a variable."));
         
         std::string value = v->print();
         file_text[_line_number] = file_text[_line_number].insert(_character_place + added[_line_number], value);
@@ -116,8 +124,7 @@ void VarTextStatement::run() const
     }
     else 
     {
-        std::string s = "Line " + std::to_string(line_counter) + ":Error - Not found. Variable: " + _name + " does not exist.";
-        yyerror(Color::set_cyan(s));
+        yyerror(Color::set_cyan("Line " + std::to_string(line_counter) + ":Error - Not found. Variable: '" + _name + "' does not exist."));
     }
 }
 
@@ -129,4 +136,9 @@ void VarTextStatement::set_line_number(int value)
 void VarTextStatement::set_character_place(int value)
 {
     _character_place = value;
+}
+
+void IfStatement::run() const
+{
+    // TODO 
 }
