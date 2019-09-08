@@ -4,6 +4,7 @@
 #include <map>
 #include "src/variables.hpp"
 #include "src/statement.hpp"
+#include "src/colors.hpp"
 
 extern FILE* yyout;
 extern FILE* yyin;
@@ -199,13 +200,13 @@ ObjectStatement: id_token ':' E {
 int main(int argc, char** argv)
 {
     if(argc < 3)
-        yyerror("Input or output filename missing.");
+        yyerror(Color::set_red("Input or output filename missing."));
 
     if((yyin = fopen(argv[1], "r")) == NULL)
-        yyerror("Opening input file failed.");
+        yyerror(Color::set_red("Opening input file failed."));
 
     if((yyout = fopen(argv[2], "w")) == NULL)
-        yyerror("Opening output file failed.");
+        yyerror(Color::set_red("Opening output file failed."));
     
     yyparse();
 

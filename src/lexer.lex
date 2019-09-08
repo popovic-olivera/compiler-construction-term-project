@@ -11,6 +11,7 @@
 #include <vector>
 #include "src/variables.hpp"
 #include "src/statement.hpp"
+#include "src/colors.hpp"
 
 #include "parser.tab.hpp"
 
@@ -64,7 +65,8 @@ NUM [0-9]
 <code>[\t ] { }
 
 <code>. {
-    std::cout << "Line " << line_counter << ":Error - Unknown character: " << *yytext << std::endl;
+    std::string s = "Line " + std::to_string(line_counter) + ":Error - Unknown character: " + *yytext;
+    std::cout << Color::set_green(s) << std::endl;
     exit(EXIT_FAILURE);
 }
 

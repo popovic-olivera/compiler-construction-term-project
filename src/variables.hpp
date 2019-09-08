@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include "colors.hpp"
 
 class Variable {
 public:

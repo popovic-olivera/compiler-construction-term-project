@@ -49,12 +49,14 @@ void ObjectTextStatement::run() const
         }
         else
         {
-            yyerror("Line " + std::to_string(line_counter) + ":Error - Not found. Atribute: " + _atribute + " of object: " + _object + " does not exist.");
+            std::string s = "Line " + std::to_string(line_counter) + ":Error - Not found. Atribute: " + _atribute + " of object: " + _object + " does not exist.";
+            yyerror(Color::set_blue(s));
         }
     }
     else 
     {
-        yyerror("Line " + std::to_string(line_counter) + ":Error - Not found. Object: " + _object + " does not exist.");
+        std::string s = "Line " + std::to_string(line_counter) + ":Error - Not found. Object: " + _object + " does not exist.";
+        yyerror(Color::set_blue(s));
     }
 }
 
@@ -85,7 +87,8 @@ void ArrayTextStatement::run() const
     }
     else 
     {
-        yyerror("Line " + std::to_string(line_counter) + ":Error - Not found. Array: " + _name + " does not exist.");
+        std::string s = "Line " + std::to_string(line_counter) + ":Error - Not found. Array: " + _name + " does not exist.";
+        yyerror(Color::set_magenta(s));
     }
 }
 
@@ -113,7 +116,8 @@ void VarTextStatement::run() const
     }
     else 
     {
-        yyerror("Line " + std::to_string(line_counter) + ":Error - Not found. Variable: " + _name + " does not exist.");
+        std::string s = "Line " + std::to_string(line_counter) + ":Error - Not found. Variable: " + _name + " does not exist.";
+        yyerror(Color::set_cyan(s));
     }
 }
 

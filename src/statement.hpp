@@ -2,6 +2,7 @@
 #define __STATEMENT_HPP__ 1
 
 #include "variables.hpp"
+#include "colors.hpp"
 #include <iostream>
 #include <vector>
 #include <string>
