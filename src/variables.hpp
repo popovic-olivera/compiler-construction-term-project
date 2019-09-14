@@ -7,6 +7,7 @@
 #include <iostream>
 #include "colors.hpp"
 
+/* This enum is used to get information about what type variable is */
 enum Type {
     STR,
     NUM,
@@ -15,6 +16,7 @@ enum Type {
     OBJ
 };
 
+/* Base class for variable types */
 class Variable {
 public:
     Variable() = default;

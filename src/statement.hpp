@@ -94,14 +94,16 @@ private:
 
 class IfStatement : public Statement {
 public:
-    IfStatement(std::string id, std::vector<Statement*> statements)
-    : _id(id), _statements(statements)
+    IfStatement(std::string id, std::vector<Statement*> statements, int place, std::vector<std::string> text)
+    : _id(id), _statements(statements), _place(place), _text(text)
     {}
     
     void run() const override;
 private:
     std::string _id;
     std::vector<Statement*> _statements;
+    int _place;
+    std::vector<std::string> _text;
 };
 
 #endif

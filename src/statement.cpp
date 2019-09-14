@@ -5,6 +5,11 @@ extern void yyerror(std::string msg);
 extern std::vector<std::string> file_text;
 extern std::map<int, int> added;
 extern int line_counter;
+bool if_activated = false;
+std::map<int, int> added_if;
+
+int added_with_if = 0;
+std::vector<std::string> if_text;
 
 void Block::run() const
 {
@@ -48,8 +53,18 @@ void ObjectTextStatement::run() const
         if(finder2 != map.end())
         {
             std::string value = finder2->second->print();
-            file_text[_line_number] = file_text[_line_number].insert(_character_place + added[_line_number], value);
-            added[_line_number] += value.size();
+            
+            if(if_activated)
+            {
+                if_text[_line_number] = if_text[_line_number].insert(_character_place + added_if[_line_number], value);
+                added_if[_line_number] += value.size();
+            }
+            else
+            {
+                int _line_num = _line_number + added_with_if;
+                file_text[_line_num] = file_text[_line_num].insert(_character_place + added[_line_number], value);
+                added[_line_number] += value.size();
+            }
         }
         else
         {
@@ -88,8 +103,18 @@ void ArrayTextStatement::run() const
         auto array = arr->get_value();
         
         std::string value = array[_index]->print();
-        file_text[_line_number] = file_text[_line_number].insert(_character_place + added[_line_number], value);
-        added[_line_number] += value.size();
+        
+        if(if_activated)
+        {
+            if_text[_line_number] = if_text[_line_number].insert(_character_place + added_if[_line_number], value);
+            added_if[_line_number] += value.size();
+        }
+        else
+        {
+            int _line_num = _line_number + added_with_if;
+            file_text[_line_num] = file_text[_line_num].insert(_character_place + added[_line_number], value);
+            added[_line_number] += value.size();
+        }
     }
     else 
     {
@@ -119,8 +144,18 @@ void VarTextStatement::run() const
             yyerror(Color::set_cyan("Line " + std::to_string(line_counter) + ":Error - '" + _name + "' is not a variable."));
         
         std::string value = v->print();
-        file_text[_line_number] = file_text[_line_number].insert(_character_place + added[_line_number], value);
-        added[_line_number] += value.size();
+        
+        if(if_activated)
+        {
+            if_text[_line_number] = if_text[_line_number].insert(_character_place + added_if[_line_number], value);
+            added_if[_line_number] += value.size(); 
+        }
+        else
+        {
+            int _line_num = _line_number + added_with_if;
+            file_text[_line_num] = file_text[_line_num].insert(_character_place + added[_line_number], value);
+            added[_line_number] += value.size(); 
+        }
     }
     else 
     {
@@ -140,5 +175,36 @@ void VarTextStatement::set_character_place(int value)
 
 void IfStatement::run() const
 {
-    // TODO 
+    if_text = _text;
+ 
+    for(auto it = added_if.begin(); it != added_if.end(); it++)
+        it->second = 0;
+    
+    auto finder = variables_table.find(_id);
+    
+    if(finder != variables_table.end())
+    {
+        Variable* v = finder->second; 
+        
+        if(v->get_type() != BOOL)
+            yyerror(Color::set_yellow("In if statement must be a bool variable. Error - " + _id + " is not a variable"));
+
+        std::string value = v->print();
+        if(value == "true")
+        {
+            if_activated = true;
+
+            for(auto s : _statements)
+                s->run();
+            
+            file_text.insert(file_text.begin() + _place + added_with_if, if_text.begin(), if_text.end());
+            added_with_if += if_text.size();
+            
+            if_activated = false;
+        }
+    }
+    else 
+    {
+        yyerror(Color::set_yellow("Line " + std::to_string(line_counter) + ":Error - Not found. Variable: '" + _id + "' does not exist."));
+    }
 }

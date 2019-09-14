@@ -13,7 +13,7 @@ Type String::get_type() const
 std::string Number::print() const 
 {
     std::string value = std::to_string(_value);
-    std::size_t dot_place = value.find(".");
+    std::size_t dot_place = value.find(".");        /* Rounding double to two decimal places */
     value = value.substr(0, dot_place + 3);
     return value;
 }
@@ -38,7 +38,11 @@ Type Boolean::get_type() const
 
 std::string Array::print() const
 {
-    return "";
+    std::string s = "";
+    for(auto v : _value)
+        s.append(v->print() + ", ");
+    
+    return s;
 }
 
 Type Array::get_type() const
@@ -59,7 +63,12 @@ Array::~Array()
 
 std::string Object::print() const
 {
-    return "";
+    std::string s = "";
+    
+    for(auto pair : _atributes)
+        s.append(pair.first + ": " + pair.second->print() + ", ");
+    
+    return s;
 }
 
 Type Object::get_type() const
