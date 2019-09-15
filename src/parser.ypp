@@ -26,17 +26,17 @@ extern std::vector<std::string> file_text;
 extern std::map<int, int> added;
 
 /* Extern global variables used for if text line buffer, declared in lexer */
-extern int if_text_line_counter;
-extern int if_line_characters_counter;
-extern std::vector<std::string> if_file_text;
+extern int buffer_text_line_counter;
+extern int buffer_line_characters_counter;
+extern std::vector<std::string> buffer_file_text;
 extern std::map<int, int> added_if;
 
-extern bool if_active;      /* This flag tells if lines should be inserted in if buffer or in regular text buffer. It is declared in lexer */
+extern bool active;      /* This flag tells if lines should be inserted in if buffer or in regular text buffer. It is declared in lexer */
 
 std::map<std::string, Variable*> variables_table;       /* Symbols table */
 %}
 
-%token begin_token end_token true_token false_token begin_text_token end_text_token if_token endif_token
+%token begin_token end_token true_token false_token begin_text_token end_text_token if_token endif_token for_token in_token endfor_token
 %token <str_type> id_token string_token
 %token <num_type> num_token
 %token <int_type> int_num_token
@@ -101,10 +101,17 @@ Block: begin_token StatementArray end_token {
     $$ = new Block(*s);
 } 
 | begin_text_token if_token id_token end_text_token TextStatementArray begin_text_token endif_token end_text_token {
-    $$ = new IfStatement(*$3, *$5, text_line_counter, if_file_text);
+    $$ = new IfStatement(*$3, *$5, text_line_counter, buffer_file_text);
     
     delete $3;
     delete $5;
+}
+| begin_text_token for_token id_token in_token id_token end_text_token TextStatementArray begin_text_token endfor_token end_text_token {
+    $$ = new ForStatement(*$3, *$5, *$7, text_line_counter, buffer_file_text);
+    
+    delete $3;
+    delete $5;
+    delete $7;
 }
 ;
 
@@ -143,10 +150,10 @@ TextStatementArray: TextStatementArray begin_text_token TextStatement end_text_t
 TextStatement: id_token '.' id_token {
     ObjectTextStatement* o = new ObjectTextStatement(*$1, *$3);
     
-    if(if_active)
+    if(active)
     {
-        o->set_line_number(if_text_line_counter);
-        o->set_character_place(if_line_characters_counter);
+        o->set_line_number(buffer_text_line_counter);
+        o->set_character_place(buffer_line_characters_counter);
     }
     else 
     {
@@ -161,10 +168,10 @@ TextStatement: id_token '.' id_token {
 | id_token '[' int_num_token ']' {
     ArrayTextStatement* a = new ArrayTextStatement(*$1, $3);
     
-    if(if_active)
+    if(active)
     {
-        a->set_line_number(if_text_line_counter);
-        a->set_character_place(if_line_characters_counter);
+        a->set_line_number(buffer_text_line_counter);
+        a->set_character_place(buffer_line_characters_counter);
     }
     else 
     {
@@ -178,10 +185,10 @@ TextStatement: id_token '.' id_token {
 | id_token {
     VarTextStatement* v = new VarTextStatement(*$1);
     
-   if(if_active)
+   if(active)
     {
-        v->set_line_number(if_text_line_counter);
-        v->set_character_place(if_line_characters_counter);
+        v->set_line_number(buffer_text_line_counter);
+        v->set_character_place(buffer_line_characters_counter);
     }
     else 
     {

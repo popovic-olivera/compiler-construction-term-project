@@ -106,4 +106,19 @@ private:
     std::vector<std::string> _text;
 };
 
+class ForStatement : public Statement {
+public:
+    ForStatement(std::string id, std::string in, std::vector<Statement*> statements, int place, std::vector<std::string> text)
+    : _id(id), _in(in), _statements(statements), _place(place), _text(text)
+    {}
+    
+    void run() const override;
+private:
+    std::string _id;
+    std::string _in;
+    std::vector<Statement*> _statements;
+    int _place;
+    std::vector<std::string> _text;
+};
+
 #endif

@@ -4,8 +4,8 @@
 
 %x code
 %x code_text
-%x if_text
-%x if_stat
+%x buffer_text
+%x statement
 
 %{
 #include <iostream>
@@ -26,11 +26,11 @@ std::vector<std::string> file_text{""};
 std::map<int, int> added;
 
 /* Global variables used for if text line buffer */
-int if_text_line_counter = 0;
-int if_line_characters_counter = 0;
-std::vector<std::string> if_file_text{""};
+int buffer_text_line_counter = 0;
+int buffer_line_characters_counter = 0;
+std::vector<std::string> buffer_file_text{""};
 
-bool if_active = false; /* This flag tells if lines should be inserted in if buffer or in regular text buffer */
+bool active = false; /* This flag tells if lines should be inserted in if buffer or in regular text buffer */
 %}
 
 NUM [0-9]
@@ -81,16 +81,27 @@ NUM [0-9]
     return end_text_token;
 }
 <code_text>"if" {
-    BEGIN(if_stat);         /* Opens separate parsing type for if statement, because in that part only id tokens should be recognised */
-    if_active = true;       /* Activates flag for inserting in if buffer */
+    BEGIN(statement);         /* Opens separate parsing type for if statement, because in that part only id tokens should be recognised */
+    active = true;       /* Activates flag for inserting in if buffer */
     
     /* Every time if statement is recognised, if buffer is cleared */
-    if_file_text.clear();   
-    if_file_text.push_back("");
-    if_text_line_counter = 0;
-    if_line_characters_counter = 0;
+    buffer_file_text.clear();   
+    buffer_file_text.push_back("");
+    buffer_text_line_counter = 0;
+    buffer_line_characters_counter = 0;
     
     return if_token;
+}
+<code_text>"for" {
+    BEGIN(statement);
+    active = true;
+    
+    buffer_file_text.clear();   
+    buffer_file_text.push_back("");
+    buffer_text_line_counter = 0;
+    buffer_line_characters_counter = 0;
+    
+    return for_token;
 }
 <code_text>[0-9]+ {
     yylval.int_type = atoi(yytext);
@@ -108,48 +119,52 @@ NUM [0-9]
     exit(EXIT_FAILURE);
 }
 
-<if_stat>"}}" {
-    BEGIN(if_text);         /* Opens separate parsing type for if text part, beacuse there is text that should be ignored */
+<statement>"}}" {
+    BEGIN(buffer_text);         /* Opens separate parsing type for if text part, beacuse there is text that should be ignored */
     return end_text_token;
 }
-<if_stat>"endif" {
+<statement>"endif" {
     BEGIN(code_text);       /* Opens separate parsing type for if statement part, and returns to parsing for code text */
     
-    if_active = false;      /* Deactivates flag for writing in if buffer */
+    active = false;      /* Deactivates flag for writing in if buffer */
     return endif_token;
 }
-<if_stat>[a-zA-Z_][a-zA-Z0-9_]* {
+<statement>"endfor" {
+    BEGIN(code_text);
+    return endfor_token;
+}
+<statement>"in" return in_token;
+<statement>[a-zA-Z_][a-zA-Z0-9_]* {
     yylval.str_type = new std::string(yytext);
     return id_token;
 }
-<if_stat>[ \t] {}   /* Tabs and spaces are being ignored */
-<if_stat>. {
+<statement>[ \t] {}   /* Tabs and spaces are being ignored */
+<statement>. {
     /* Any unrecognised character will cause an error, which will be colored in green */
     std::cout << Color::set_green("Line " + std::to_string(line_counter) + ":Error - Unknown character: " + *yytext) << std::endl;  
     exit(EXIT_FAILURE);
 }
 
-<if_text>"{{" { 
-    BEGIN(if_stat);         /* Opens separate parsing type for if statement part */
+<buffer_text>"{{" { 
+    BEGIN(statement);         /* Opens separate parsing type for if statement part */
     return begin_text_token;
 }
-<if_text>"}}" {
-    BEGIN(if_text);         /* Opens separate parsing type for if text part */
+<buffer_text>"}}" {
+    BEGIN(buffer_text);         /* Opens separate parsing type for if text part */
     return end_text_token;
 }
-<if_text>\n {
+<buffer_text>\n {
     line_counter++;
         
-    if_file_text[if_text_line_counter].append(yytext);
-    if_text_line_counter++;
-    if_line_characters_counter = 0;
+    buffer_file_text[buffer_text_line_counter].append(yytext);
+    buffer_text_line_counter++;
+    buffer_line_characters_counter = 0;
     
-    if_file_text.push_back("");
-    
+    buffer_file_text.push_back("");
 }
-<if_text>. {
-    if_file_text[if_text_line_counter].append(yytext);
-    if_line_characters_counter++;
+<buffer_text>. {
+    buffer_file_text[buffer_text_line_counter].append(yytext);
+    buffer_line_characters_counter++;
 }
 
 \n {

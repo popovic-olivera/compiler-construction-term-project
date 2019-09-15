@@ -6,10 +6,11 @@ extern std::vector<std::string> file_text;
 extern std::map<int, int> added;
 extern int line_counter;
 bool if_activated = false;
-std::map<int, int> added_if;
+bool for_activated = false;
+std::map<int, int> buffer_added;
 
 int added_with_if = 0;
-std::vector<std::string> if_text;
+std::vector<std::string> buffer;
 
 void Block::run() const
 {
@@ -54,10 +55,10 @@ void ObjectTextStatement::run() const
         {
             std::string value = finder2->second->print();
             
-            if(if_activated)
+            if( if_activated)
             {
-                if_text[_line_number] = if_text[_line_number].insert(_character_place + added_if[_line_number], value);
-                added_if[_line_number] += value.size();
+                buffer[_line_number] = buffer[_line_number].insert(_character_place + buffer_added[_line_number], value);
+                buffer_added[_line_number] += value.size();
             }
             else
             {
@@ -104,10 +105,10 @@ void ArrayTextStatement::run() const
         
         std::string value = array[_index]->print();
         
-        if(if_activated)
+        if( if_activated)
         {
-            if_text[_line_number] = if_text[_line_number].insert(_character_place + added_if[_line_number], value);
-            added_if[_line_number] += value.size();
+            buffer[_line_number] = buffer[_line_number].insert(_character_place + buffer_added[_line_number], value);
+            buffer_added[_line_number] += value.size();
         }
         else
         {
@@ -143,12 +144,16 @@ void VarTextStatement::run() const
         if(v->get_type() == ARR || v->get_type() == OBJ)
             yyerror(Color::set_cyan("Line " + std::to_string(line_counter) + ":Error - '" + _name + "' is not a variable."));
         
-        std::string value = v->print();
+        std::string value = "";
+        if(for_activated)
+            value = v->print() + " ";
+        else
+            value = v->print();
         
-        if(if_activated)
+        if( if_activated or for_activated)
         {
-            if_text[_line_number] = if_text[_line_number].insert(_character_place + added_if[_line_number], value);
-            added_if[_line_number] += value.size(); 
+            buffer[_line_number] = buffer[_line_number].insert(_character_place + buffer_added[_line_number], value);
+            buffer_added[_line_number] += value.size(); 
         }
         else
         {
@@ -175,9 +180,9 @@ void VarTextStatement::set_character_place(int value)
 
 void IfStatement::run() const
 {
-    if_text = _text;
+    buffer = _text;
  
-    for(auto it = added_if.begin(); it != added_if.end(); it++)
+    for(auto it = buffer_added.begin(); it != buffer_added.end(); it++)
         it->second = 0;
     
     auto finder = variables_table.find(_id);
@@ -197,11 +202,78 @@ void IfStatement::run() const
             for(auto s : _statements)
                 s->run();
             
-            file_text.insert(file_text.begin() + _place + added_with_if, if_text.begin(), if_text.end());
-            added_with_if += if_text.size();
+            for(unsigned i = 0; i < buffer.size(); i++)
+            {
+                if(buffer[i] == "\n")
+                {
+                    auto it = buffer.begin();
+                    buffer.erase(it + i);
+                }
+                if(buffer[i].size() == 0)
+                {
+                    auto it = buffer.begin();
+                    buffer.erase(it + i);
+                }
+            }
+            
+            file_text.insert(file_text.begin() + _place + added_with_if, buffer.begin(), buffer.end());
+            added_with_if += buffer.size();
             
             if_activated = false;
         }
+    }
+    else 
+    {
+        yyerror(Color::set_yellow("Line " + std::to_string(line_counter) + ":Error - Not found. Variable: '" + _id + "' does not exist."));
+    }
+}
+
+void ForStatement::run() const
+{
+    buffer = _text;
+    
+    for(auto it = buffer_added.begin(); it != buffer_added.end(); it++)
+        it->second = 0;
+    
+    auto finder = variables_table.find(_in);
+    
+    if(finder != variables_table.end())
+    {
+        Variable* v = finder->second; 
+        
+        if(v->get_type() != ARR)
+            yyerror(Color::set_yellow("In for statement must be an array. Error - " + _id + " is not array."));
+
+        for_activated = true;
+        
+        std::vector<Variable*> array = ((Array*)v)->get_value();
+        
+        for(auto& a : array)
+        {
+            variables_table[_id] = a;
+            
+            for(auto s : _statements)
+                s->run();
+        }
+            
+        for(unsigned i = 0; i < buffer.size(); i++)
+        {
+            if(buffer[i] == "\n")
+            {
+                auto it = buffer.begin();
+                buffer.erase(it + i);
+            }
+            if(buffer[i].size() == 0)
+            {
+                auto it = buffer.begin();
+                buffer.erase(it + i);
+            }
+        }
+            
+        file_text.insert(file_text.begin() + _place + added_with_if, buffer.begin(), buffer.end());
+        added_with_if += buffer.size();
+            
+        for_activated = false;
     }
     else 
     {
