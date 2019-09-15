@@ -3,6 +3,7 @@
 
 #include <string>
 
+/* This static class is used for coloring errors */
 class Color {
 public:
     static std::string set_red(std::string s);

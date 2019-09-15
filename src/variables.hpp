@@ -21,9 +21,9 @@ class Variable {
 public:
     Variable() = default;
 
-    virtual ~Variable() = default;
-    virtual std::string print() const = 0;
-    virtual Type get_type() const = 0;
+    virtual ~Variable() = default;      /* Virtual destructor has to be declared beacuse class has virtual methods */ 
+    virtual std::string print() const = 0;      /* This method is used to get value from variable */
+    virtual Type get_type() const = 0;          /* This method is used to get type of variable */
 };
 
 class String : public Variable {
@@ -70,8 +70,8 @@ public:
 
     ~Array();
     std::string print() const override;
-    std::vector<Variable*> get_value() const;
     Type get_type() const override;
+    std::vector<Variable*> get_value() const;
 private:
     std::vector<Variable*> _value;
     Array(const Array& a);

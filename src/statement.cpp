@@ -1,19 +1,27 @@
 #include "statement.hpp"
 
-extern std::map<std::string, Variable*> variables_table;
-extern void yyerror(std::string msg);
+extern void yyerror(std::string msg);   /* Function for reporting errors defined in parser.ypp */
+
+extern std::map<std::string, Variable*> variables_table;    /* Map for storing variables defined in parser.ypp */
+
+/* Global variables used for saving text in file which has to be changed, declared in lexer.lex */
 extern std::vector<std::string> file_text;
 extern std::map<int, int> added;
 extern int line_counter;
+
+/* Variables used for switching between writing into text buffer and if/for help buffer */
 bool if_activated = false;
 bool for_activated = false;
-std::map<int, int> buffer_added;
 
-int added_with_if = 0;
+/* Help variables for if/for buffers; counting how many lines 
+ * and how many characters in each line have been added */
 std::vector<std::string> buffer;
+std::map<int, int> buffer_added;
+int added_with_buffers = 0;
 
 void Block::run() const
 {
+    /* For Block, just go through statements array and run every one */
     for(unsigned i = 0; i < _statements.size(); i++)
         _statements[i]->run();
 }
@@ -26,6 +34,7 @@ Block::~Block()
 
 void Assignment::run() const
 {
+    /* Assign value to given id in variables table */
     variables_table[_id] = _value;
 }
 
@@ -34,9 +43,10 @@ Assignment::~Assignment()
     delete _value;
 }
 
+/* Errors with objects are colored in blue :) */
 void ObjectTextStatement::run() const
 {
-    auto finder = variables_table.find(_object);
+    auto finder = variables_table.find(_object);    /* Try to find _object */
     
     if(finder != variables_table.end())
     {
@@ -47,24 +57,30 @@ void ObjectTextStatement::run() const
         
         Object* obj = (Object*)o;
         
+        /* Get list of atributes and find desired one */
         auto map = obj->get_atributes();
-        
         auto finder2 = map.find(_atribute);
         
         if(finder2 != map.end())
         {
             std::string value = finder2->second->print();
             
-            if( if_activated)
+            /* If writing to if buffer is activated, write into it, else write into file text */
+            if(if_activated)
             {
+                /* + buffer_added[_line_number] is added because every time something is added into line with _line_number,
+                     character place of current result increases */
                 buffer[_line_number] = buffer[_line_number].insert(_character_place + buffer_added[_line_number], value);
-                buffer_added[_line_number] += value.size();
+                buffer_added[_line_number] += value.size();     /* Remember how many characters have been added in this step  */
             }
             else
             {
-                int _line_num = _line_number + added_with_if;
-                file_text[_line_num] = file_text[_line_num].insert(_character_place + added[_line_number], value);
-                added[_line_number] += value.size();
+                int l = _line_number + added_with_buffers;  /* This is added because every time buffer is inserted into file text it changes line number */
+                
+                /* + added[_line_number] is added because every time something is added into line with _line_number,
+                     character place of current result increases */
+                file_text[l] = file_text[l].insert(_character_place + added[_line_number], value);
+                added[_line_number] += value.size();        /* Add in map how much has been added in this step for _line_number line */
             }
         }
         else
@@ -88,9 +104,10 @@ void ObjectTextStatement::set_character_place(int value)
     _character_place = value;
 }
 
+/* Errors with arrays are colored in magenta :) */
 void ArrayTextStatement::run() const
 {
-    auto finder = variables_table.find(_name);
+    auto finder = variables_table.find(_name);  /* Try to find _name */
     
     if(finder != variables_table.end())
     {
@@ -101,20 +118,26 @@ void ArrayTextStatement::run() const
         
         Array* arr = (Array*)a;
         
+        /* Get array elements and take value of one with index equal to _index */
         auto array = arr->get_value();
-        
         std::string value = array[_index]->print();
         
-        if( if_activated)
+        /* If writing to if buffer is activated, write into it, else write into file text */
+        if(if_activated)
         {
+            /* + buffer_added[_line_number] is added because every time something is added into line with _line_number,
+                 character place of current result increases */
             buffer[_line_number] = buffer[_line_number].insert(_character_place + buffer_added[_line_number], value);
-            buffer_added[_line_number] += value.size();
+            buffer_added[_line_number] += value.size();     /* Remember how many characters have been added in this step  */
         }
         else
         {
-            int _line_num = _line_number + added_with_if;
-            file_text[_line_num] = file_text[_line_num].insert(_character_place + added[_line_number], value);
-            added[_line_number] += value.size();
+            int l = _line_number + added_with_buffers;  /* This is added because every time buffer is inserted into file text it changes line number */
+            
+            /* + added[_line_number] is added because every time something is added into line with _line_number,
+                 character place of current result increases */
+            file_text[l] = file_text[l].insert(_character_place + added[_line_number], value);
+            added[_line_number] += value.size();        /* Add in map how much has been added in this step for _line_number line */
         }
     }
     else 
@@ -133,9 +156,10 @@ void ArrayTextStatement::set_character_place(int value)
     _character_place = value;
 }
 
+/* Errors with variables are colored in cyan :) */
 void VarTextStatement::run() const
 {
-    auto finder = variables_table.find(_name);
+    auto finder = variables_table.find(_name);      /* Try to find _name */
     
     if(finder != variables_table.end())
     {
@@ -145,21 +169,27 @@ void VarTextStatement::run() const
             yyerror(Color::set_cyan("Line " + std::to_string(line_counter) + ":Error - '" + _name + "' is not a variable."));
         
         std::string value = "";
-        if(for_activated)
+        if(for_activated)   /* If in for buffer, add space after every word */
             value = v->print() + " ";
         else
             value = v->print();
         
+        /* If writing to if/for buffer is activated, write into it, else write into file text */
         if( if_activated or for_activated)
         {
+            /* + buffer_added[_line_number] is added because every time something is added into line with _line_number,
+                 character place of current result increases */
             buffer[_line_number] = buffer[_line_number].insert(_character_place + buffer_added[_line_number], value);
-            buffer_added[_line_number] += value.size(); 
+            buffer_added[_line_number] += value.size();     /* Remember how many characters have been added in this step  */
         }
         else
         {
-            int _line_num = _line_number + added_with_if;
-            file_text[_line_num] = file_text[_line_num].insert(_character_place + added[_line_number], value);
-            added[_line_number] += value.size(); 
+            int l = _line_number + added_with_buffers;    /* This is added because every time buffer is inserted into file text it changes line number */
+            
+            /* + added[_line_number] is added because every time something is added into line with _line_number,
+                 character place of current result increases */
+            file_text[l] = file_text[l].insert(_character_place + added[_line_number], value);
+            added[_line_number] += value.size();         /* Add in map how much has been added in this step for _line_number line */
         }
     }
     else 
@@ -178,14 +208,16 @@ void VarTextStatement::set_character_place(int value)
     _character_place = value;
 }
 
+/* Errors with if and for statements are colored in yellow :) */
 void IfStatement::run() const
 {
-    buffer = _text;
+    buffer = _text;     /* Get saved text between {{if id}} and {{endif}} */
  
+    /* Reset map for added characters in each line */
     for(auto it = buffer_added.begin(); it != buffer_added.end(); it++)
         it->second = 0;
     
-    auto finder = variables_table.find(_id);
+    auto finder = variables_table.find(_id);    /* Try to find variable _id */
     
     if(finder != variables_table.end())
     {
@@ -197,11 +229,12 @@ void IfStatement::run() const
         std::string value = v->print();
         if(value == "true")
         {
-            if_activated = true;
+            if_activated = true;    /* Activate flag for writing into if buffer */
 
             for(auto s : _statements)
                 s->run();
             
+            /* Remove empty lines before writing into file text */
             for(unsigned i = 0; i < buffer.size(); i++)
             {
                 if(buffer[i] == "\n")
@@ -216,26 +249,31 @@ void IfStatement::run() const
                 }
             }
             
-            file_text.insert(file_text.begin() + _place + added_with_if, buffer.begin(), buffer.end());
-            added_with_if += buffer.size();
+            /* Insert content of if buffer to file text */
+            file_text.insert(file_text.begin() + _place + added_with_buffers, buffer.begin(), buffer.end());
+            added_with_buffers += buffer.size();
             
-            if_activated = false;
+            if_activated = false;   /* Deactivate flag for writing into if buffer */
         }
     }
     else 
     {
         yyerror(Color::set_yellow("Line " + std::to_string(line_counter) + ":Error - Not found. Variable: '" + _id + "' does not exist."));
     }
+    
+    buffer.clear();
 }
 
+/* Errors with if and for statements are colored in yellow :) */
 void ForStatement::run() const
 {
-    buffer = _text;
+    buffer = _text;     /* Get saved text between {{for id in id}} and {{endfor}}*/
     
+    /* Reset map for added characters in each line */
     for(auto it = buffer_added.begin(); it != buffer_added.end(); it++)
         it->second = 0;
     
-    auto finder = variables_table.find(_in);
+    auto finder = variables_table.find(_in);    /* Try to find variable _id */
     
     if(finder != variables_table.end())
     {
@@ -244,9 +282,9 @@ void ForStatement::run() const
         if(v->get_type() != ARR)
             yyerror(Color::set_yellow("In for statement must be an array. Error - " + _id + " is not array."));
 
-        for_activated = true;
+        for_activated = true;   /* Activate flag for writing into for buffer */
         
-        std::vector<Variable*> array = ((Array*)v)->get_value();
+        std::vector<Variable*> array = ((Array*)v)->get_value();    /* Get array elements */
         
         for(auto& a : array)
         {
@@ -256,6 +294,7 @@ void ForStatement::run() const
                 s->run();
         }
             
+        /* Remove empty lines before writing into file text */
         for(unsigned i = 0; i < buffer.size(); i++)
         {
             if(buffer[i] == "\n")
@@ -270,13 +309,16 @@ void ForStatement::run() const
             }
         }
             
-        file_text.insert(file_text.begin() + _place + added_with_if, buffer.begin(), buffer.end());
-        added_with_if += buffer.size();
+        /* Insert content of for buffer to file text */
+        file_text.insert(file_text.begin() + _place + added_with_buffers, buffer.begin(), buffer.end());
+        added_with_buffers += buffer.size();
             
-        for_activated = false;
+        for_activated = false;      /* Deactivate flag for writing into for buffer */
     }
     else 
     {
         yyerror(Color::set_yellow("Line " + std::to_string(line_counter) + ":Error - Not found. Variable: '" + _id + "' does not exist."));
     }
+    
+    buffer.clear();
 }
