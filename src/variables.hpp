@@ -22,8 +22,8 @@ public:
     Variable() = default;
 
     virtual ~Variable() = default;      /* Virtual destructor has to be declared beacuse class has virtual methods */ 
-    virtual std::string print() const = 0;      /* This method is used to get value from variable */
-    virtual Type get_type() const = 0;          /* This method is used to get type of variable */
+    virtual std::string print() const = 0;      /* This virtual method is used to get value from variable */
+    virtual Type get_type() const = 0;          /* This virtual method is used to get type of variable */
 };
 
 class String : public Variable {

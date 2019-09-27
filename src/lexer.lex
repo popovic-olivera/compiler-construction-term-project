@@ -103,9 +103,9 @@ NUM [0-9]
     
     return for_token;
 }
-<code_text>[0-9]+ {
-    yylval.int_type = atoi(yytext);
-    return int_num_token;
+<code_text>[1-9]{NUM}*|{NUM}+(\.{NUM}+)? {
+    yylval.num_type = atof(yytext);
+    return num_token;
 }
 <code_text>[a-zA-Z_][a-zA-Z0-9_]* {
     yylval.str_type = new std::string(yytext);
@@ -170,7 +170,7 @@ NUM [0-9]
 \n {
     line_counter++;
     
-    if(text_line_counter == 0)
+    if (text_line_counter == 0)
         added[0] = 0;
     
     file_text[text_line_counter].append(yytext);

@@ -25,7 +25,7 @@ Type Number::get_type() const
 
 std::string Boolean::print() const
 {
-    if(_value)
+    if (_value)
         return "true";
     else
         return "false";
@@ -40,7 +40,7 @@ std::string Array::print() const
 {
     std::string s = "";
     for(auto v : _value)
-        s.append(v->print() + ", ");
+        s.append(v->print() + " ");
     
     return s;
 }
@@ -66,7 +66,7 @@ std::string Object::print() const
     std::string s = "";
     
     for(auto pair : _atributes)
-        s.append(pair.first + ": " + pair.second->print() + ", ");
+        s.append(pair.first + ": " + pair.second->print() + " ");
     
     return s;
 }

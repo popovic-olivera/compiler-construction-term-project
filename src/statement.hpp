@@ -12,7 +12,7 @@ class Statement {
 public:
     Statement() = default;
 
-    virtual void run() const = 0;
+    virtual void run() const = 0;       /* This virtual method will be used for runing every statement */
     virtual ~Statement() = default;     /* Virtual destructor has to be made because class has virtual method*/
 };
 
@@ -45,56 +45,6 @@ private:
     Assignment& operator=(const Assignment& a);
 };
 
-class ObjectTextStatement : public Statement {
-public:
-    /* This statement consists of 'id.id'. Line number and character_place are needed for knowing in which text/buffer line to write result to */
-    ObjectTextStatement(std::string object, std::string atribute, int line_number = 0, int character_place = 0)
-    : _object(object), _atribute(atribute), _line_number(line_number), _character_place(character_place)
-    {}
-    
-    void run() const override;
-    void set_line_number(int value);
-    void set_character_place(int value);
-private:
-    std::string _object;
-    std::string _atribute;
-    int _line_number;
-    int _character_place;
-};
-
-class ArrayTextStatement : public Statement {
-public: 
-    /* This statement consists of 'id[number]'. Line number and character_place are needed for knowing in which text/buffer line to write result to */
-    ArrayTextStatement(std::string name, int index, int line_number = 0, int character_place = 0)
-    : _name(name), _index(index), _line_number(line_number), _character_place(character_place)
-    {}
-    
-    void run() const override;
-    void set_line_number(int value);
-    void set_character_place(int value);
-private:
-    std::string _name;
-    int _index;
-    int _line_number;
-    int _character_place;
-};
-
-class VarTextStatement : public Statement {
-public: 
-    /* This statement consists of 'id'. Line number and character_place are needed for knowing in which text/buffer line to write result to */
-    VarTextStatement(std::string name, int line_number = 0, int character_place = 0)
-    : _name(name), _line_number(line_number), _character_place(character_place)
-    {}
-    
-    void run() const override;
-    void set_line_number(int value);
-    void set_character_place(int value);
-private:
-    std::string _name;
-    int _line_number;
-    int _character_place;
-};
-
 class IfStatement : public Statement {
 public:
     /* This statement consists of '{{ if id }} ... {{ endif }}', where ... is array of statements.
@@ -113,19 +63,70 @@ private:
 
 class ForStatement : public Statement {
 public:
-    /* This statement consists of '{{ for id in id }} ... {{ endfor }}', where ... is array of statements.
+    /* This statement consists of '{{ for id1 in id2 }} ... {{ endfor }}', where ... is array of statements.
        Place is needed to know in which line to insert text, after it has been processed. */
-    ForStatement(std::string id, std::string in, std::vector<Statement*> statements, int place, std::vector<std::string> text)
-    : _id(id), _in(in), _statements(statements), _place(place), _text(text)
+    ForStatement(std::string id1, std::string id2, std::vector<Statement*> statements, int place, std::vector<std::string> text)
+    : _id1(id1), _id2(id2), _statements(statements), _place(place), _text(text)
     {}
     
     void run() const override;
 private:
-    std::string _id;
-    std::string _in;
+    std::string _id1;
+    std::string _id2;
     std::vector<Statement*> _statements;
     int _place;
     std::vector<std::string> _text;
+};
+
+class TextStatement : public Statement {
+public: 
+    TextStatement(std::string name, int line_number, int character_place)
+    : _name(name), _line_number(line_number), _character_place(character_place)
+    {}
+    
+    void set_line_number(int value);
+    void set_character_place(int value);
+protected:
+    std::string _name;
+    int _line_number;
+    int _character_place;
+};
+
+class ObjectTextStatement : public TextStatement {
+public:
+    /* This statement consists of 'id.id'. Line number and character_place are needed for knowing in which text/buffer line and where in that line
+     * to write result to */
+    ObjectTextStatement(std::string name, std::string atribute, int line_number = 0, int character_place = 0)
+    : TextStatement(name, line_number, character_place), _atribute(atribute)
+    {}
+    
+    void run() const override;
+private:
+    std::string _atribute;
+};
+
+class ArrayTextStatement : public TextStatement {
+public: 
+    /* This statement consists of 'id[index]'. Line number and character_place are needed for knowing in which text/buffer line and where in that line
+     * to write result to */
+    ArrayTextStatement(std::string name, int index, int line_number = 0, int character_place = 0)
+    : TextStatement(name, line_number, character_place), _index(index)
+    {}
+    
+    void run() const override;
+private:
+    int _index;
+};
+
+class VarTextStatement : public TextStatement {
+public: 
+    /* This statement consists of 'id'. Line number and character_place are needed for knowing in which text/buffer line and where in that line
+     * to write result to */
+    VarTextStatement(std::string name, int line_number = 0, int character_place = 0)
+    : TextStatement(name, line_number, character_place)
+    {}
+    
+    void run() const override;
 };
 
 #endif
