@@ -139,6 +139,11 @@ NUM [0-9]
     return id_token;
 }
 <statement>[ \t] {}   /* Tabs and spaces are being ignored */
+<statement>[.\[\]] return yytext[0];
+<statement>[1-9]{NUM}*|{NUM}+(\.{NUM}+)? {
+    yylval.num_type = atof(yytext);
+    return num_token;
+}
 <statement>. {
     /* Any unrecognised character will cause an error, which will be colored in green */
     std::cout << Color::set_green("Line " + std::to_string(line_counter) + ":Error - Unknown character: " + *yytext) << std::endl;  
