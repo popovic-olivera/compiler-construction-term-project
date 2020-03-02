@@ -1,8 +1,77 @@
-# Compiler construction term project
+# MDPP (MD++)
 
 Ideja projekta je proširivanje markdown jezika mogućnošću korišćenja promenljivih, objekata i nizova.
 
-# Način korišćenja
+## Primer korišćenja
+
+### Izvorna `mdpp` datoteka
+```md
+{%
+    title = "Markdown jezik";
+    author = {
+        name: "Olivera Popović",
+        id: "64/2016"
+    };
+    course = {
+        name: "Konstrukcija kompilatora",
+        short: "kk"
+    };
+
+    # Ovo je primer komentara
+    
+    faculty = "Matematički fakultet";
+    markdown_authors = ["John Gruber", "Aaron Swartz"];
+    services = ["GitHub", "GitLab", "BitBucket"];
+
+    debug = True;
+    version = 1.0;
+%}
+
+# {{title}}
+
+## O seminarskom radu
+- autor: {{author.name}} {{author.id}}
+- kurs: {{course.name}} ({{course.short}})
+- fakultet: {{faculty}}
+{{ if debug }}
+- verzija prezentacije: {{version}}
+{{ endif }}
+
+## Jezik Markdown
+- Razvijen od strane autora {{markdown_authors[0]}} i {{markdown_authors[1]}}
+- Inicijalno objavljen 2004. godine
+- Trenutna verzija: {{version}}
+
+## Servisi koji intenzivno koriste Markdown
+{{ for service in services }}
+- {{ service }}
+{{ endfor }}
+
+## Pitanja?
+```
+
+### Izlazna `md` datoteka
+```md
+# Markdown jezik
+
+## O seminarskom radu
+- autor: Olivera Popović 64/2016
+- kurs: Konstrukcija kompilatora (kk)
+- fakultet: Matematički fakultet
+- verzija prezentacije: 1.00
+
+## Jezik Markdown
+- Razvijen od strane autora John Gruber i Aaron Swartz
+- Inicijalno objavljen 2004. godine
+- Trenutna verzija: 1.00
+
+## Servisi koji intenzivno koriste Markdown
+- GitHub GitLab BitBucket 
+
+## Pitanja?
+```
+
+## Način korišćenja
 
 - Prvi deo koda, ograničen sa {% i %}, služi za deklaracije i definicije.
 
